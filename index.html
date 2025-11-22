@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Solar System Voice Guide</title>
     <style>
         * {
@@ -10,19 +12,29 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #0c0c2e 0%, #1a1a4a 50%, #0c0c2e 100%);
             color: #ffffff;
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
             position: relative;
             overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        html {
+            height: -webkit-fill-available;
         }
 
         .stars {
@@ -51,63 +63,65 @@
             width: 100%;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            padding: 40px 30px;
+            padding: 30px 20px;
             text-align: center;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .logo {
-            font-size: 48px;
+            font-size: 42px;
             margin-bottom: 15px;
             animation: float 3s ease-in-out infinite;
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-8px); }
         }
 
         h1 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             margin-bottom: 8px;
             background: linear-gradient(45deg, #4fc3f7, #2979ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .planet-title {
-            font-size: 20px;
+            font-size: 18px;
             color: #ffeb3b;
             margin: 10px 0;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
 
         .subtitle {
-            font-size: 14px;
+            font-size: 13px;
             color: #b3e5fc;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             opacity: 0.9;
         }
 
         .planet-container {
             position: relative;
-            height: 200px;
-            margin: 30px 0;
+            height: 180px;
+            margin: 25px 0;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
         .sun {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             background: radial-gradient(circle, #ffeb3b, #ff9800);
             border-radius: 50%;
-            box-shadow: 0 0 50px #ff9800;
+            box-shadow: 0 0 40px #ff9800;
             animation: pulse 2s ease-in-out infinite;
             position: absolute;
             z-index: 10;
@@ -119,148 +133,81 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
         }
 
-        .mercury { 
-            width: 20px; 
-            height: 20px; 
-            background: radial-gradient(circle at 30% 30%, #c0c0c0, #8c8c8c);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbit 4s linear infinite;
-            box-shadow: 0 0 8px rgba(192, 192, 192, 0.5);
+        /* Planet sizes optimized for mobile */
+        .mercury { width: 16px; height: 16px; }
+        .venus { width: 22px; height: 22px; }
+        .earth { width: 26px; height: 26px; }
+        .mars { width: 20px; height: 20px; }
+        .jupiter { width: 42px; height: 42px; }
+        .saturn { width: 38px; height: 38px; }
+        .uranus { width: 32px; height: 32px; }
+        .neptune { width: 30px; height: 30px; }
+
+        /* Planet backgrounds */
+        .mercury { background: radial-gradient(circle at 30% 30%, #c0c0c0, #8c8c8c); }
+        .venus { background: radial-gradient(circle at 30% 30%, #e39e54, #b3712f); }
+        .earth { background: radial-gradient(circle at 30% 30%, #6b93d6, #2c5aa0); }
+        .mars { background: radial-gradient(circle at 30% 30%, #ff7b5f, #c1442c); }
+        .jupiter { background: radial-gradient(circle at 30% 30%, #e0a56c, #b3743a); }
+        .saturn { background: radial-gradient(circle at 30% 30%, #f0d890, #d4b747); }
+        .uranus { background: radial-gradient(circle at 30% 30%, #a6e1f5, #6bb5d6); }
+        .neptune { background: radial-gradient(circle at 30% 30%, #5b7cbd, #3a4f8c); }
+
+        /* Orbit animations */
+        @keyframes orbit {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg) translateX(70px) rotate(0deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg) translateX(70px) rotate(-360deg);
+            }
         }
 
-        .venus { 
-            width: 28px; 
-            height: 28px; 
-            background: radial-gradient(circle at 30% 30%, #e39e54, #b3712f);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbit 6s linear infinite;
-            box-shadow: 0 0 10px rgba(227, 158, 84, 0.5);
-        }
-
-        .earth { 
-            width: 32px; 
-            height: 32px; 
-            background: radial-gradient(circle at 30% 30%, #6b93d6, #2c5aa0);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbit 8s linear infinite;
-            box-shadow: 0 0 12px rgba(107, 147, 214, 0.5);
-        }
-
-        .mars { 
-            width: 26px; 
-            height: 26px; 
-            background: radial-gradient(circle at 30% 30%, #ff7b5f, #c1442c);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbit 10s linear infinite;
-            box-shadow: 0 0 10px rgba(255, 123, 95, 0.5);
-        }
-
-        .jupiter { 
-            width: 50px; 
-            height: 50px; 
-            background: radial-gradient(circle at 30% 30%, #e0a56c, #b3743a);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbit 14s linear infinite;
-            box-shadow: 0 0 15px rgba(224, 165, 108, 0.5);
-        }
-
-        .saturn { 
-            width: 45px; 
-            height: 45px; 
-            background: radial-gradient(circle at 30% 30%, #f0d890, #d4b747);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbit 18s linear infinite;
-            box-shadow: 0 0 15px rgba(240, 216, 144, 0.5);
-        }
+        .mercury { animation: orbit 4s linear infinite; transform-origin: 70px center; }
+        .venus { animation: orbit 6s linear infinite; transform-origin: 85px center; }
+        .earth { animation: orbit 8s linear infinite; transform-origin: 100px center; }
+        .mars { animation: orbit 10s linear infinite; transform-origin: 115px center; }
+        .jupiter { animation: orbit 14s linear infinite; transform-origin: 140px center; }
+        .saturn { animation: orbit 18s linear infinite; transform-origin: 160px center; }
+        .uranus { animation: orbit 22s linear infinite; transform-origin: 175px center; }
+        .neptune { animation: orbit 26s linear infinite; transform-origin: 190px center; }
 
         .saturn::after {
             content: '';
             position: absolute;
-            width: 70px;
-            height: 10px;
+            width: 55px;
+            height: 8px;
             background: rgba(210, 180, 140, 0.5);
             border-radius: 50%;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(20deg);
-            box-shadow: 0 0 8px rgba(210, 180, 140, 0.7);
+            box-shadow: 0 0 6px rgba(210, 180, 140, 0.7);
         }
-
-        .uranus { 
-            width: 38px; 
-            height: 38px; 
-            background: radial-gradient(circle at 30% 30%, #a6e1f5, #6bb5d6);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbit 22s linear infinite;
-            box-shadow: 0 0 12px rgba(166, 225, 245, 0.5);
-        }
-
-        .neptune { 
-            width: 36px; 
-            height: 36px; 
-            background: radial-gradient(circle at 30% 30%, #5b7cbd, #3a4f8c);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbit 26s linear infinite;
-            box-shadow: 0 0 12px rgba(91, 124, 189, 0.5);
-        }
-
-        @keyframes orbit {
-            0% {
-                transform: translate(-50%, -50%) rotate(0deg) translateX(80px) rotate(0deg);
-            }
-            100% {
-                transform: translate(-50%, -50%) rotate(360deg) translateX(80px) rotate(-360deg);
-            }
-        }
-
-        .mercury { animation-duration: 4s; transform-origin: 80px center; }
-        .venus { animation-duration: 6s; transform-origin: 100px center; }
-        .earth { animation-duration: 8s; transform-origin: 120px center; }
-        .mars { animation-duration: 10s; transform-origin: 140px center; }
-        .jupiter { animation-duration: 14s; transform-origin: 170px center; }
-        .saturn { animation-duration: 18s; transform-origin: 200px center; }
-        .uranus { animation-duration: 22s; transform-origin: 220px center; }
-        .neptune { animation-duration: 26s; transform-origin: 240px center; }
 
         .status-container {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
+            padding: 18px;
+            margin: 18px 0;
         }
 
         .status {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
             margin-bottom: 10px;
         }
 
         .loading-bar {
             width: 100%;
-            height: 4px;
+            height: 3px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
             overflow: hidden;
-            margin: 15px 0;
+            margin: 12px 0;
         }
 
         .loading-progress {
@@ -278,21 +225,18 @@
         }
 
         .audio-controls {
-            margin: 25px 0;
-        }
-
-        audio {
-            width: 100%;
-            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
         }
 
         .project-info {
-            font-size: 12px;
+            font-size: 11px;
             color: #81d4fa;
-            margin-top: 25px;
+            margin-top: 20px;
             opacity: 0.8;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 15px;
+            padding-top: 12px;
         }
 
         .hidden {
@@ -308,21 +252,21 @@
             50% { opacity: 0.7; }
         }
 
-        /* Professional Audio Wave Animation */
+        /* Audio Wave Animation - Mobile Optimized */
         .audio-wave {
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            height: 50px;
-            margin: 20px 0;
+            height: 45px;
+            margin: 15px 0;
         }
 
         .wave-bar {
-            width: 5px;
-            height: 10px;
+            width: 4px;
+            height: 8px;
             background: linear-gradient(to top, #4fc3f7, #2979ff);
-            margin: 0 3px;
-            border-radius: 3px;
+            margin: 0 2px;
+            border-radius: 2px;
             animation: wave 1.5s infinite ease-in-out;
             transform-origin: bottom;
         }
@@ -339,29 +283,91 @@
         .wave-bar:nth-child(10) { animation-delay: 0.9s; }
 
         @keyframes wave {
-            0%, 100% { 
-                height: 10px; 
-                background: linear-gradient(to top, #4fc3f7, #2979ff);
-            }
-            25% { 
-                height: 30px; 
-                background: linear-gradient(to top, #2979ff, #4fc3f7);
-            }
-            50% { 
-                height: 40px; 
-                background: linear-gradient(to top, #4fc3f7, #2979ff);
-            }
-            75% { 
-                height: 20px; 
-                background: linear-gradient(to top, #2979ff, #4fc3f7);
-            }
+            0%, 100% { height: 8px; }
+            25% { height: 25px; }
+            50% { height: 35px; }
+            75% { height: 15px; }
         }
 
         .audio-status {
-            font-size: 14px;
+            font-size: 13px;
             color: #4fc3f7;
-            margin-top: 10px;
+            margin-top: 8px;
             font-weight: 500;
+        }
+
+        /* Pause Button - Mobile Optimized */
+        .pause-btn {
+            background: linear-gradient(45deg, #2979ff, #4fc3f7);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 8px 0;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(41, 121, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 48px; /* Minimum touch target size */
+            min-width: 140px;
+        }
+
+        .pause-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 8px rgba(41, 121, 255, 0.4);
+        }
+
+        .pause-btn.paused {
+            background: linear-gradient(45deg, #4fc3f7, #2979ff);
+        }
+
+        .pause-icon {
+            font-size: 16px;
+        }
+
+        .paused .pause-icon::before {
+            content: "▶";
+        }
+
+        .pause-icon::before {
+            content: "⏸";
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 15px;
+            }
+            
+            .logo {
+                font-size: 38px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .planet-container {
+                height: 160px;
+                margin: 20px 0;
+            }
+            
+            .pause-btn {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+        }
+
+        /* Reduce motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            .star, .logo, .planet, .wave-bar, .loading-progress {
+                animation: none;
+            }
         }
     </style>
 </head>
@@ -388,11 +394,11 @@
 
         <div class="status-container">
             <div id="loadingSection">
-                <div class="status pulse" id="statusMessage">🚀 Initializing Audio System...</div>
+                <div class="status pulse" id="statusMessage">🚀 Starting Audio Tour...</div>
                 <div class="loading-bar">
                     <div class="loading-progress"></div>
                 </div>
-                <div style="font-size: 12px; color: #81d4fa;" id="loadingText">Loading your space narration</div>
+                <div style="font-size: 12px; color: #81d4fa;" id="loadingText">Audio will play automatically</div>
             </div>
 
             <div id="playingSection" class="hidden">
@@ -410,11 +416,19 @@
                     <div class="wave-bar"></div>
                 </div>
                 <div class="audio-status">Audio guide is active</div>
+                
+                <!-- Pause Button -->
+                <div class="audio-controls">
+                    <button id="pauseButton" class="pause-btn">
+                        <span class="pause-icon"></span>
+                        <span>PAUSE</span>
+                    </button>
+                </div>
             </div>
         </div>
 
         <div class="audio-controls">
-            <audio id="audioPlayer" class="hidden">
+            <audio id="audioPlayer" class="hidden" preload="auto">
                 Your browser does not support the audio element.
             </audio>
         </div>
@@ -478,6 +492,7 @@
             }
         };
 
+        // DOM Elements
         const audioPlayer = document.getElementById('audioPlayer');
         const loadingSection = document.getElementById('loadingSection');
         const playingSection = document.getElementById('playingSection');
@@ -487,17 +502,22 @@
         const loadingText = document.getElementById('loadingText');
         const playingMessage = document.getElementById('playingMessage');
         const audioWave = document.getElementById('audioWave');
+        const pauseButton = document.getElementById('pauseButton');
+
+        // Mobile detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         function getAudioFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
-            const audioKey = urlParams.get('audio') || 'earth'; // Default to earth if no parameter
-            
+            const audioKey = urlParams.get('audio') || 'earth';
             return AUDIO_LIBRARY[audioKey] || AUDIO_LIBRARY.earth;
         }
 
         function createStars() {
             const stars = document.getElementById('stars');
-            for (let i = 0; i < 100; i++) {
+            // Fewer stars on mobile for better performance
+            const starCount = isMobile ? 60 : 100;
+            for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
                 star.style.width = Math.random() * 2 + 'px';
@@ -521,47 +541,91 @@
 
             // Set audio source
             audioPlayer.src = currentAudio.url;
-            audioPlayer.preload = "auto";
         }
 
-        function attemptAutoPlay() {
+        function togglePause() {
+            if (audioPlayer.paused) {
+                audioPlayer.play().catch(e => console.log('Play failed:', e));
+                pauseButton.classList.remove('paused');
+                pauseButton.querySelector('span:last-child').textContent = 'PAUSE';
+                audioWave.classList.remove('hidden');
+            } else {
+                audioPlayer.pause();
+                pauseButton.classList.add('paused');
+                pauseButton.querySelector('span:last-child').textContent = 'PLAY';
+                audioWave.classList.add('hidden');
+            }
+        }
+
+        function startAudioPlayback() {
             const playPromise = audioPlayer.play();
             
             if (playPromise !== undefined) {
                 playPromise.then(() => {
+                    // Success - audio is playing
                     loadingSection.classList.add('hidden');
                     playingSection.classList.remove('hidden');
                     audioWave.classList.remove('hidden');
                 }).catch(error => {
-                    // If autoplay fails, show a message and try again after user interaction
-                    statusMessage.textContent = "Tap to start audio";
-                    loadingText.textContent = "Audio requires user interaction";
+                    // Autoplay failed - try multiple strategies
+                    console.log('Autoplay failed, trying alternative methods:', error);
                     
-                    // Add a click listener to try playing again
-                    document.addEventListener('click', function playOnClick() {
+                    // Strategy 1: Wait a bit and try again
+                    setTimeout(() => {
                         audioPlayer.play().then(() => {
                             loadingSection.classList.add('hidden');
                             playingSection.classList.remove('hidden');
                             audioWave.classList.remove('hidden');
+                        }).catch(e => {
+                            // Strategy 2: Show message to tap
+                            statusMessage.textContent = "Tap to Start Audio";
+                            loadingText.textContent = "Audio requires interaction";
+                            
+                            // Strategy 3: Listen for any user interaction
+                            const startOnInteraction = () => {
+                                audioPlayer.play().then(() => {
+                                    loadingSection.classList.add('hidden');
+                                    playingSection.classList.remove('hidden');
+                                    audioWave.classList.remove('hidden');
+                                    document.removeEventListener('click', startOnInteraction);
+                                    document.removeEventListener('touchstart', startOnInteraction);
+                                });
+                            };
+                            
+                            document.addEventListener('click', startOnInteraction, { once: true });
+                            document.addEventListener('touchstart', startOnInteraction, { once: true });
                         });
-                        document.removeEventListener('click', playOnClick);
-                    }, { once: true });
+                    }, 500);
                 });
             }
         }
 
+        // Initialize when page loads
         window.addEventListener('load', function() {
             createStars();
             initializeAudio();
             
-            // Try to autoplay after a short delay
-            setTimeout(attemptAutoPlay, 1000);
+            // Start audio playback with multiple attempts
+            setTimeout(startAudioPlayback, 500);
+            
+            // Additional attempt after a longer delay
+            setTimeout(() => {
+                if (audioPlayer.paused && loadingSection.classList.contains('hidden') === false) {
+                    startAudioPlayback();
+                }
+            }, 2000);
         });
 
+        // Pause button event
+        pauseButton.addEventListener('click', togglePause);
+
+        // Audio event listeners
         audioPlayer.addEventListener('playing', function() {
             loadingSection.classList.add('hidden');
             playingSection.classList.remove('hidden');
             audioWave.classList.remove('hidden');
+            pauseButton.classList.remove('paused');
+            pauseButton.querySelector('span:last-child').textContent = 'PAUSE';
         });
 
         audioPlayer.addEventListener('ended', function() {
@@ -580,12 +644,50 @@
             audioWave.classList.remove('hidden');
         });
 
-        audioPlayer.addEventListener('error', function() {
+        audioPlayer.addEventListener('error', function(e) {
+            console.error('Audio error:', e);
             loadingSection.innerHTML = `
                 <div class="status">❌ Audio Error</div>
-                <div style="font-size: 12px; color: #f44336; margin-top: 10px;">Please check audio file</div>
+                <div style="font-size: 12px; color: #f44336; margin-top: 10px;">Please check your connection</div>
             `;
         });
+
+        // Additional mobile optimization: prevent zoom on double-tap
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Auto-retry audio if still not playing after all attempts
+        setTimeout(() => {
+            if (audioPlayer.paused && loadingSection.classList.contains('hidden') === false) {
+                statusMessage.textContent = "Tap Screen to Start";
+                loadingText.textContent = "Audio ready - tap anywhere";
+                
+                const finalAttempt = () => {
+                    audioPlayer.play().then(() => {
+                        loadingSection.classList.add('hidden');
+                        playingSection.classList.remove('hidden');
+                        audioWave.classList.remove('hidden');
+                    });
+                    document.removeEventListener('click', finalAttempt);
+                    document.removeEventListener('touchstart', finalAttempt);
+                };
+                
+                document.addEventListener('click', finalAttempt, { once: true });
+                document.addEventListener('touchstart', finalAttempt, { once: true });
+            }
+        }, 4000);
     </script>
 </body>
 </html>
