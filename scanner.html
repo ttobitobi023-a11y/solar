@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar System Audio Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0c0c2e 0%, #1a1a4a 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            padding: 25px 20px 15px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 8px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(45deg, #4fc3f7, #2979ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #b3e5fc;
+            opacity: 0.9;
+        }
+
+        /* SCANNER SECTION */
+        .scanner-section {
+            padding: 0 25px;
+            margin-bottom: 25px;
+        }
+
+        .scanner-frame {
+            width: 100%;
+            height: 280px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(79, 195, 247, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin: 0 auto;
+            position: relative;
+        }
+
+        #reader {
+            width: 100%;
+            height: 100%;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanning-line {
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4fc3f7, transparent);
+            animation: scan 2s ease-in-out infinite;
+            box-shadow: 0 0 10px #4fc3f7;
+        }
+
+        @keyframes scan {
+            0%, 100% { transform: translateY(-50px); }
+            50% { transform: translateY(50px); }
+        }
+
+        .scanning-text {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 13px;
+            color: #4fc3f7;
+            font-weight: 500;
+        }
+
+        /* NOW PLAYING SECTION */
+        .now-playing {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            margin: 0 25px 25px;
+            padding: 25px;
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .now-playing-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .playing-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #4fc3f7;
+            font-weight: 600;
+        }
+
+        .playing-dot {
+            width: 8px;
+            height: 8px;
+            background: #4fc3f7;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 10px #4fc3f7;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* PLANET DISPLAY */
+        .planet-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .planet-icon-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .planet-icon {
+            font-size: 36px;
+            z-index: 2;
+        }
+
+        .planet-icon-bg {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            opacity: 0.3;
+            filter: blur(10px);
+        }
+
+        .planet-info {
+            flex: 1;
+        }
+
+        .planet-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #ffffff, #b3e5fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .planet-description {
+            font-size: 13px;
+            color: #b3e5fc;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        /* AUDIO WAVE */
+        .audio-wave-container {
+            margin: 25px 0;
+        }
+
+        .audio-wave {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 50px;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            min-height: 5px;
+            background: linear-gradient(to top, #4fc3f7, #2979ff);
+            border-radius: 2px;
+            animation: wave 1.5s infinite ease-in-out;
+        }
+
+        @keyframes wave {
+            0%, 100% { height: 5px; }
+            25% { height: 20px; }
+            50% { height: 35px; }
+            75% { height: 15px; }
+        }
+
+        /* AUDIO CONTROLS */
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            background: rgba(79, 195, 247, 0.2);
+        }
+
+        .control-btn-main {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #4fc3f7, #2979ff);
+            font-size: 24px;
+            box-shadow: 0 10px 20px rgba(41, 121, 255, 0.3);
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7, #2979ff);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #b3e5fc;
+            opacity: 0.8;
+        }
+
+        /* VOLUME CONTROL */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .volume-icon {
+            font-size: 20px;
+            color: #4fc3f7;
+            min-width: 24px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4fc3f7;
+            cursor: pointer;
+            box-shadow: 0 0 10px #4fc3f7;
+        }
+
+        .volume-value {
+            font-size: 12px;
+            color: #b3e5fc;
+            min-width: 35px;
+            text-align: right;
+        }
+
+        /* STATUS MESSAGES */
+        .status-message {
+            text-align: center;
+            padding: 12px;
+            margin: 15px 25px;
+            border-radius: 12px;
+            font-size: 13px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .status-scanning {
+            background: rgba(79, 195, 247, 0.1);
+            color: #4fc3f7;
+            border: 1px solid rgba(79, 195, 247, 0.2);
+        }
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .status-error {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.2);
+        }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-text {
+            font-size: 11px;
+            color: #81d4fa;
+            opacity: 0.7;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 480px) {
+            .header { padding: 20px 15px 10px; }
+            .scanner-section { padding: 0 20px; }
+            .now-playing { margin: 0 20px 20px; padding: 20px; }
+            .planet-icon-container { width: 60px; height: 60px; }
+            .planet-icon { font-size: 32px; }
+            .planet-name { font-size: 20px; }
+            .control-btn { width: 50px; height: 50px; }
+            .control-btn-main { width: 60px; height: 60px; }
+        }
+    </style>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo">🌌</div>
+        <div class="title">Solar System Audio Scanner</div>
+        <div class="subtitle">Scan QR → Auto-play audio guide</div>
+    </div>
+
+    <!-- SCANNER -->
+    <div class="scanner-section">
+        <div class="scanner-frame">
+            <div id="reader"></div>
+            <div class="scanner-overlay">
+                <div class="scanning-line"></div>
+                <div class="scanning-text">🔍 Point camera at QR code</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATUS MESSAGE -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <!-- NOW PLAYING -->
+    <div id="nowPlaying" class="now-playing">
+        <div class="now-playing-header">
+            <div class="playing-label">Now Playing</div>
+            <div class="playing-dot"></div>
+        </div>
+
+        <div class="planet-display">
+            <div class="planet-icon-container" id="planetIconContainer">
+                <div class="planet-icon" id="planetIcon">🌌</div>
+                <div class="planet-icon-bg" id="planetIconBg"></div>
+            </div>
+            <div class="planet-info">
+                <div class="planet-name" id="planetName">Solar System</div>
+                <div class="planet-description" id="planetDescription">Audio Guide</div>
+            </div>
+        </div>
+
+        <div class="audio-wave-container">
+            <div class="audio-wave" id="audioWave">
+                <!-- Wave bars will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">0:00</span>
+                <span id="durationTime">0:00</span>
+            </div>
+        </div>
+
+        <div class="audio-controls">
+            <button class="control-btn" onclick="skipBackward()">⏪</button>
+            <button class="control-btn control-btn-main" onclick="togglePlayPause()" id="playPauseBtn">
+                ⏸️
+            </button>
+            <button class="control-btn" onclick="skipForward()">⏩</button>
+        </div>
+
+        <div class="volume-control">
+            <div class="volume-icon">🔊</div>
+            <input type="range" class="volume-slider" id="volumeSlider" 
+                   min="0" max="100" value="70" oninput="changeVolume(this.value)">
+            <div class="volume-value" id="volumeValue">70%</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="footer-text">Solar System Exploration Project • Professional Audio Guide</div>
+    </div>
+
+    <!-- HIDDEN AUDIO PLAYER -->
+    <audio id="audioPlayer" preload="auto"></audio>
+
+    <script>
+        // 🌍 PLANET DATABASE
+        const PLANETS = {
+            sun: {
+                name: 'THE SUN',
+                description: 'Center of Our Solar System',
+                color: '#ff9800',
+                icon: '☀️',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Sun_9.mp3'
+            },
+            mercury: {
+                name: 'MERCURY',
+                description: 'Closest Planet to the Sun',
+                color: '#9e9e9e',
+                icon: '🪐',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Mercury_2.mp3'
+            },
+            venus: {
+                name: 'VENUS',
+                description: 'Earth\'s Twin Sister',
+                color: '#ffcc80',
+                icon: '🌟',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Venus_1.mp3'
+            },
+            earth: {
+                name: 'EARTH',
+                description: 'Our Home Planet',
+                color: '#4fc3f7',
+                icon: '🌍',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Earth_3.mp3'
+            },
+            mars: {
+                name: 'MARS',
+                description: 'The Red Planet',
+                color: '#ff5722',
+                icon: '🔴',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Mars_4.mp3'
+            },
+            jupiter: {
+                name: 'JUPITER',
+                description: 'The Giant Planet',
+                color: '#ffa726',
+                icon: '🪐',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Jupiter_5.mp3'
+            },
+            saturn: {
+                name: 'SATURN',
+                description: 'The Ringed Planet',
+                color: '#ffca28',
+                icon: '🪐',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Saturn_6.mp3'
+            },
+            uranus: {
+                name: 'URANUS',
+                description: 'The Ice Giant',
+                color: '#80deea',
+                icon: '🔵',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Uranus_7.mp3'
+            },
+            neptune: {
+                name: 'NEPTUNE',
+                description: 'The Blue Giant',
+                color: '#5c6bc0',
+                icon: '🔵',
+                mp3: 'https://ttobitobi023-a11y.github.io/solar/Neptune_8.mp3'
+            }
+        };
+
+        // 🔗 QR CODE PATTERNS - WORKING WITH YOUR MP3 LINKS!
+        const QR_PATTERNS = {
+            // FULL MP3 LINKS
+            'https://ttobitobi023-a11y.github.io/solar/Sun_9.mp3': 'sun',
+            'https://ttobitobi023-a11y.github.io/solar/Mercury_2.mp3': 'mercury',
+            'https://ttobitobi023-a11y.github.io/solar/Venus_1.mp3': 'venus',
+            'https://ttobitobi023-a11y.github.io/solar/Earth_3.mp3': 'earth',
+            'https://ttobitobi023-a11y.github.io/solar/Mars_4.mp3': 'mars',
+            'https://ttobitobi023-a11y.github.io/solar/Jupiter_5.mp3': 'jupiter',
+            'https://ttobitobi023-a11y.github.io/solar/Saturn_6.mp3': 'saturn',
+            'https://ttobitobi023-a11y.github.io/solar/Uranus_7.mp3': 'uranus',
+            'https://ttobitobi023-a11y.github.io/solar/Neptune_8.mp3': 'neptune',
+            
+            // MP3 FILENAMES
+            'Sun_9.mp3': 'sun',
+            'Mercury_2.mp3': 'mercury',
+            'Venus_1.mp3': 'venus',
+            'Earth_3.mp3': 'earth',
+            'Mars_4.mp3': 'mars',
+            'Jupiter_5.mp3': 'jupiter',
+            'Saturn_6.mp3': 'saturn',
+            'Uranus_7.mp3': 'uranus',
+            'Neptune_8.mp3': 'neptune',
+            
+            // PLANET NAMES
+            'sun': 'sun',
+            'mercury': 'mercury',
+            'venus': 'venus',
+            'earth': 'earth',
+            'mars': 'mars',
+            'jupiter': 'jupiter',
+            'saturn': 'saturn',
+            'uranus': 'uranus',
+            'neptune': 'neptune',
+            
+            // FILIPINO/ALTERNATIVE NAMES
+            'araw': 'sun',
+            'merkuryo': 'mercury',
+            'benus': 'venus',
+            'mundo': 'earth',
+            'lupa': 'earth',
+            'marte': 'mars',
+            'hupiter': 'jupiter',
+            'saturno': 'saturn',
+            'urano': 'uranus',
+            'neptuno': 'neptune'
+        };
+
+        // 🎵 AUDIO SYSTEM
+        const audioPlayer = document.getElementById('audioPlayer');
+        let currentPlanet = null;
+        let isPlaying = false;
+
+        // Initialize audio wave bars
+        function initAudioWave() {
+            const waveContainer = document.getElementById('audioWave');
+            waveContainer.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar';
+                bar.style.animationDelay = `${i * 0.1}s`;
+                waveContainer.appendChild(bar);
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type = 'scanning') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.style.display = 'block';
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Detect planet from QR data
+        function detectPlanetFromQR(qrData) {
+            const lowerData = qrData.toLowerCase();
+            
+            // 1. Check direct patterns
+            for (const [pattern, planet] of Object.entries(QR_PATTERNS)) {
+                if (lowerData.includes(pattern.toLowerCase())) {
+                    return planet;
+                }
+            }
+            
+            return null;
+        }
+
+        // Play planet audio
+        function playPlanet(planetKey) {
+            const planet = PLANETS[planetKey];
+            if (!planet) return;
+            
+            currentPlanet = planetKey;
+            
+            // Update UI
+            document.getElementById('planetName').textContent = planet.name;
+            document.getElementById('planetDescription').textContent = planet.description;
+            document.getElementById('planetIcon').textContent = planet.icon;
+            document.getElementById('planetIconContainer').style.background = 
+                `radial-gradient(circle at 30% 30%, ${planet.color}, ${darkenColor(planet.color, 40)})`;
+            document.getElementById('planetIconBg').style.background = planet.color;
+            
+            // Show now playing section
+            document.getElementById('nowPlaying').style.display = 'block';
+            
+            // Set and play audio
+            audioPlayer.src = planet.mp3;
+            audioPlayer.volume = document.getElementById('volumeSlider').value / 100;
+            
+            audioPlayer.play().then(() => {
+                isPlaying = true;
+                document.getElementById('playPauseBtn').innerHTML = '⏸️';
+                startWaveAnimation();
+                showStatus(`🎵 Playing ${planet.name}`, 'success');
+            }).catch(error => {
+                console.log("Auto-play blocked:", error);
+                document.getElementById('playPauseBtn').innerHTML = '▶️';
+                showStatus("👆 Tap play button to start audio", 'scanning');
+            });
+        }
+
+        // Toggle play/pause
+        function togglePlayPause() {
+            if (audioPlayer.paused) {
+                audioPlayer.play().then(() => {
+                    isPlaying = true;
+                    document.getElementById('playPauseBtn').innerHTML = '⏸️';
+                    startWaveAnimation();
+                });
+            } else {
+                audioPlayer.pause();
+                isPlaying = false;
+                document.getElementById('playPauseBtn').innerHTML = '▶️';
+                stopWaveAnimation();
+            }
+        }
+
+        // Skip backward 10 seconds
+        function skipBackward() {
+            audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
+        }
+
+        // Skip forward 10 seconds
+        function skipForward() {
+            audioPlayer.currentTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 10);
+        }
+
+        // Change volume
+        function changeVolume(value) {
+            audioPlayer.volume = value / 100;
+            document.getElementById('volumeValue').textContent = `${value}%`;
+        }
+
+        // Start wave animation
+        function startWaveAnimation() {
+            const bars = document.querySelectorAll('.wave-bar');
+            bars.forEach(bar => {
+                bar.style.animationPlayState = 'running';
+            });
+        }
+
+        // Stop wave animation
+        function stopWaveAnimation() {
+            const bars = document.querySelectorAll('.wave-bar');
+            bars.forEach(bar => {
+                bar.style.animationPlayState = 'paused';
+            });
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            if (!audioPlayer.duration || isNaN(audioPlayer.duration)) return;
+            
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            // Update time display
+            document.getElementById('currentTime').textContent = 
+                formatTime(audioPlayer.currentTime);
+            document.getElementById('durationTime').textContent = 
+                formatTime(audioPlayer.duration);
+        }
+
+        // Format time (seconds to MM:SS)
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Darken color for gradients
+        function darkenColor(color, percent) {
+            const num = parseInt(color.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max((num >> 16) - amt, 0);
+            const G = Math.max((num >> 8 & 0x00FF) - amt, 0);
+            const B = Math.max((num & 0x0000FF) - amt, 0);
+            return "#" + ((R << 16) + (G << 8) + B).toString(16).padStart(6, '0');
+        }
+
+        // QR Scanner success handler
+        function onScanSuccess(decodedText) {
+            console.log("QR Scanned:", decodedText);
+            
+            // Detect planet
+            const planetKey = detectPlanetFromQR(decodedText);
+            
+            if (planetKey) {
+                showStatus(`🔍 Detected ${PLANETS[planetKey].name}`, 'success');
+                
+                // Stop scanner temporarily
+                html5QrCode.stop().catch(() => {});
+                
+                // Auto-play the audio
+                setTimeout(() => {
+                    playPlanet(planetKey);
+                }, 500);
+                
+                // Restart scanner after delay
+                setTimeout(() => {
+                    restartScanner();
+                }, 3000);
+                
+            } else {
+                showStatus(`❓ Cannot detect planet. Scan again.`, 'error');
+                
+                // Restart scanner immediately
+                setTimeout(() => {
+                    restartScanner();
+                }, 2000);
+            }
+        }
+
+        // Restart scanner
+        function restartScanner() {
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 200 },
+                onScanSuccess
+            ).then(() => {
+                showStatus("🔍 Ready to scan next QR...", 'scanning');
+            }).catch(err => {
+                console.log("Scanner restart error:", err);
+            });
+        }
+
+        // Initialize everything
+        function init() {
+            initAudioWave();
+            
+            // Start scanner
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 200 },
+                onScanSuccess
+            ).catch(err => {
+                console.error("Scanner error:", err);
+                showStatus("📱 Allow camera access to scan QR codes", 'error');
+            });
+            
+            // Set up audio event listeners
+            audioPlayer.addEventListener('timeupdate', updateProgress);
+            audioPlayer.addEventListener('ended', () => {
+                isPlaying = false;
+                document.getElementById('playPauseBtn').innerHTML = '▶️';
+                stopWaveAnimation();
+                showStatus("✅ Audio finished. Ready for next scan.", 'scanning');
+            });
+            audioPlayer.addEventListener('play', () => {
+                isPlaying = true;
+                document.getElementById('playPauseBtn').innerHTML = '⏸️';
+                startWaveAnimation();
+            });
+            audioPlayer.addEventListener('pause', () => {
+                isPlaying = false;
+                document.getElementById('playPauseBtn').innerHTML = '▶️';
+                stopWaveAnimation();
+            });
+            
+            // Initialize volume
+            changeVolume(70);
+        }
+
+        // Start when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
