@@ -117,11 +117,11 @@
         }
 
         .sun {
-            width: 65px;
-            height: 65px;
+            width: 75px;
+            height: 75px;
             background: radial-gradient(circle, #ffeb3b, #ff9800, #ff5722);
             border-radius: 50%;
-            box-shadow: 0 0 60px #ff9800, 0 0 100px rgba(255, 152, 0, 0.3);
+            box-shadow: 0 0 90px #ff9800, 0 0 140px rgba(255, 152, 0, 0.5);
             animation: sunPulse 3s ease-in-out infinite;
             position: absolute;
             z-index: 10;
@@ -130,34 +130,34 @@
         }
 
         .sun:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 80px #ff9800, 0 0 120px rgba(255, 152, 0, 0.4);
+            transform: scale(1.1);
+            box-shadow: 0 0 110px #ff9800, 0 0 170px rgba(255, 152, 0, 0.6);
         }
 
         .sun.active {
-            box-shadow: 0 0 100px #ff9800, 0 0 150px rgba(255, 152, 0, 0.5);
+            box-shadow: 0 0 130px #ff9800, 0 0 200px rgba(255, 152, 0, 0.7);
             animation: sunPulseActive 1.5s ease-in-out infinite;
         }
 
         @keyframes sunPulse {
             0%, 100% { 
-                box-shadow: 0 0 60px #ff9800, 0 0 100px rgba(255, 152, 0, 0.3);
+                box-shadow: 0 0 80px #ff9800, 0 0 130px rgba(255, 152, 0, 0.5);
                 transform: scale(1);
             }
             50% { 
-                box-shadow: 0 0 80px #ff9800, 0 0 120px rgba(255, 152, 0, 0.4);
-                transform: scale(1.03);
+                box-shadow: 0 0 100px #ff9800, 0 0 160px rgba(255, 152, 0, 0.6);
+                transform: scale(1.06);
             }
         }
 
         @keyframes sunPulseActive {
             0%, 100% { 
-                box-shadow: 0 0 80px #ff9800, 0 0 130px rgba(255, 152, 0, 0.5);
-                transform: scale(1.05);
+                box-shadow: 0 0 110px #ff9800, 0 0 180px rgba(255, 152, 0, 0.7);
+                transform: scale(1.1);
             }
             50% { 
-                box-shadow: 0 0 100px #ff9800, 0 0 150px rgba(255, 152, 0, 0.6);
-                transform: scale(1.08);
+                box-shadow: 0 0 130px #ff9800, 0 0 220px rgba(255, 152, 0, 0.8);
+                transform: scale(1.15);
             }
         }
 
@@ -173,7 +173,13 @@
         }
 
         .planet:hover {
-            transform: scale(1.1);
+            transform: scale(1.15);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+        }
+
+        .planet.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
         }
 
         /* Planet sizes optimized for mobile */
@@ -398,8 +404,8 @@
             }
             
             .sun {
-                width: 55px;
-                height: 55px;
+                width: 65px;
+                height: 65px;
             }
             
             .pause-btn {
@@ -489,7 +495,7 @@
         // ==================== AUDIO LIBRARY ====================
         const AUDIO_LIBRARY = {
             sun: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Sun_0.mp3',
+                url: 'https://ttobitobi023-a11y.github.io/solar/Sun_9.mp3',
                 title: 'THE SUN',
                 subtitle: 'Center of Our Solar System',
                 color: '#ff9800'
@@ -559,7 +565,7 @@
         const sunElement = document.getElementById('sunElement');
 
         // Current playing audio
-        let currentAudio = 'earth';
+        let currentAudio = 'sun';
         let isPlaying = false;
 
         // Mobile detection
@@ -567,7 +573,7 @@
 
         function getAudioFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
-            const audioKey = urlParams.get('audio') || 'sun'; // Default to sun now
+            const audioKey = urlParams.get('audio') || 'sun'; // Default to SUN now
             return AUDIO_LIBRARY[audioKey] || AUDIO_LIBRARY.sun;
         }
 
@@ -624,6 +630,7 @@
             
             // Update loading text
             loadingText.textContent = `Loading ${audioData.title.toLowerCase()} narration...`;
+            statusMessage.textContent = `🚀 Loading ${audioData.title}...`;
             
             // Set and play audio
             audioPlayer.src = audioData.url;
@@ -638,6 +645,7 @@
                     isPlaying = true;
                     pauseButton.classList.remove('paused');
                     pauseButton.querySelector('span:last-child').textContent = 'PAUSE';
+                    audioStatus.textContent = `${audioData.title} narration playing`;
                 }).catch(error => {
                     console.log('Audio play failed:', error);
                     // Show fallback message
@@ -674,6 +682,10 @@
         function startAudioPlayback() {
             const initialAudio = getAudioFromURL();
             updateUI(initialAudio);
+            audioPlayer.src = initialAudio.url;
+            
+            // Preload the audio
+            audioPlayer.load();
             
             const playPromise = audioPlayer.play();
             
@@ -683,37 +695,30 @@
                     playingSection.classList.remove('hidden');
                     audioWave.classList.remove('hidden');
                     isPlaying = true;
+                    audioStatus.textContent = `${initialAudio.title} narration playing`;
                 }).catch(error => {
                     console.log('Autoplay failed, trying alternative methods:', error);
                     
-                    // Strategy 1: Wait a bit and try again
-                    setTimeout(() => {
+                    // Strategy 1: Show loading message
+                    statusMessage.textContent = `Ready to play ${initialAudio.title}`;
+                    loadingText.textContent = "Tap anywhere to start";
+                    
+                    // Strategy 2: Listen for any user interaction
+                    const startOnInteraction = () => {
                         audioPlayer.play().then(() => {
                             loadingSection.classList.add('hidden');
                             playingSection.classList.remove('hidden');
                             audioWave.classList.remove('hidden');
                             isPlaying = true;
+                            document.removeEventListener('click', startOnInteraction);
+                            document.removeEventListener('touchstart', startOnInteraction);
                         }).catch(e => {
-                            // Strategy 2: Show message to tap
-                            statusMessage.textContent = "Tap to Start Audio";
-                            loadingText.textContent = "Audio requires interaction";
-                            
-                            // Strategy 3: Listen for any user interaction
-                            const startOnInteraction = () => {
-                                audioPlayer.play().then(() => {
-                                    loadingSection.classList.add('hidden');
-                                    playingSection.classList.remove('hidden');
-                                    audioWave.classList.remove('hidden');
-                                    isPlaying = true;
-                                    document.removeEventListener('click', startOnInteraction);
-                                    document.removeEventListener('touchstart', startOnInteraction);
-                                });
-                            };
-                            
-                            document.addEventListener('click', startOnInteraction, { once: true });
-                            document.addEventListener('touchstart', startOnInteraction, { once: true });
+                            console.log('Interactive play also failed:', e);
                         });
-                    }, 500);
+                    };
+                    
+                    document.addEventListener('click', startOnInteraction, { once: true });
+                    document.addEventListener('touchstart', startOnInteraction, { once: true });
                 });
             }
         }
@@ -725,9 +730,8 @@
             // Set initial audio from URL or default to sun
             const initialAudioData = getAudioFromURL();
             updateUI(initialAudioData);
-            audioPlayer.src = initialAudioData.url;
             
-            // Start audio playback with multiple attempts
+            // Start audio playback
             setTimeout(startAudioPlayback, 500);
             
             // Additional attempt after a longer delay
@@ -749,7 +753,6 @@
             pauseButton.classList.remove('paused');
             pauseButton.querySelector('span:last-child').textContent = 'PAUSE';
             isPlaying = true;
-            audioStatus.textContent = `${AUDIO_LIBRARY[currentAudio].title} narration playing`;
         });
 
         audioPlayer.addEventListener('ended', function() {
@@ -757,9 +760,9 @@
                 <div class="status">✅ Tour Complete</div>
                 <div class="audio-status">Thank you for exploring!</div>
                 <div class="audio-controls">
-                    <button onclick="playAudio('sun')" class="pause-btn" style="margin-top: 10px;">
-                        <span>🔁</span>
-                        <span>REPLAY</span>
+                    <button onclick="playAudio('sun')" class="pause-btn" style="margin-top: 10px; background: linear-gradient(45deg, #ff9800, #ff5722);">
+                        <span>☀️</span>
+                        <span>REPLAY SUN</span>
                     </button>
                 </div>
             `;
@@ -779,11 +782,16 @@
 
         audioPlayer.addEventListener('error', function(e) {
             console.error('Audio error:', e);
+            
+            // Show error based on which audio failed
+            const audioData = AUDIO_LIBRARY[currentAudio];
+            
             loadingSection.innerHTML = `
-                <div class="status">❌ Audio Error</div>
-                <div style="font-size: 12px; color: #f44336; margin-top: 10px;">Please check your connection</div>
+                <div class="status">❌ ${audioData.title} Audio Error</div>
+                <div style="font-size: 12px; color: #f44336; margin-top: 10px;">Unable to load audio file</div>
+                <div style="font-size: 11px; color: #81d4fa; margin-top: 5px;">Please check your internet connection</div>
                 <div class="audio-controls">
-                    <button onclick="playAudio('sun')" class="pause-btn" style="margin-top: 10px;">
+                    <button onclick="playAudio('${currentAudio}')" class="pause-btn" style="margin-top: 10px; background: linear-gradient(45deg, #ff9800, #ff5722);">
                         <span>🔁</span>
                         <span>TRY AGAIN</span>
                     </button>
