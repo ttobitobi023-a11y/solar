@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
     <title>Solar System Voice Guide</title>
     <style>
         * {
@@ -136,7 +134,6 @@
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
         }
 
-        /* Planet sizes optimized for mobile */
         .mercury { width: 16px; height: 16px; }
         .venus { width: 22px; height: 22px; }
         .earth { width: 26px; height: 26px; }
@@ -146,7 +143,6 @@
         .uranus { width: 32px; height: 32px; }
         .neptune { width: 30px; height: 30px; }
 
-        /* Planet backgrounds */
         .mercury { background: radial-gradient(circle at 30% 30%, #c0c0c0, #8c8c8c); }
         .venus { background: radial-gradient(circle at 30% 30%, #e39e54, #b3712f); }
         .earth { background: radial-gradient(circle at 30% 30%, #6b93d6, #2c5aa0); }
@@ -156,7 +152,6 @@
         .uranus { background: radial-gradient(circle at 30% 30%, #a6e1f5, #6bb5d6); }
         .neptune { background: radial-gradient(circle at 30% 30%, #5b7cbd, #3a4f8c); }
 
-        /* Orbit animations */
         @keyframes orbit {
             0% {
                 transform: translate(-50%, -50%) rotate(0deg) translateX(70px) rotate(0deg);
@@ -252,7 +247,6 @@
             50% { opacity: 0.7; }
         }
 
-        /* Audio Wave Animation - Mobile Optimized */
         .audio-wave {
             display: flex;
             justify-content: center;
@@ -296,7 +290,6 @@
             font-weight: 500;
         }
 
-        /* Pause Button - Mobile Optimized */
         .pause-btn {
             background: linear-gradient(45deg, #2979ff, #4fc3f7);
             color: white;
@@ -313,7 +306,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            min-height: 48px; /* Minimum touch target size */
+            min-height: 48px;
             min-width: 140px;
         }
 
@@ -338,7 +331,6 @@
             content: "⏸";
         }
 
-        /* Mobile-specific optimizations */
         @media (max-width: 480px) {
             .container {
                 padding: 25px 15px;
@@ -363,7 +355,6 @@
             }
         }
 
-        /* Reduce motion for accessibility */
         @media (prefers-reduced-motion: reduce) {
             .star, .logo, .planet, .wave-bar, .loading-progress {
                 animation: none;
@@ -417,7 +408,6 @@
                 </div>
                 <div class="audio-status">Audio guide is active</div>
                 
-                <!-- Pause Button -->
                 <div class="audio-controls">
                     <button id="pauseButton" class="pause-btn">
                         <span class="pause-icon"></span>
@@ -440,52 +430,93 @@
     </div>
 
     <script>
+        // ==================== URL DETECTION ====================
+        let selectedAudio = 'earth'; // Default
+        
+        // Check current URL for audio file patterns
+        const currentURL = window.location.href.toLowerCase();
+        
+        if (currentURL.includes('mercury_2.mp3')) {
+            selectedAudio = 'mercury';
+        } else if (currentURL.includes('venus_1.mp3')) {
+            selectedAudio = 'venus';
+        } else if (currentURL.includes('earth_3.mp3')) {
+            selectedAudio = 'earth';
+        } else if (currentURL.includes('mars_4.mp3')) {
+            selectedAudio = 'mars';
+        } else if (currentURL.includes('jupiter_5.mp3')) {
+            selectedAudio = 'jupiter';
+        } else if (currentURL.includes('saturn_6.mp3')) {
+            selectedAudio = 'saturn';
+        } else if (currentURL.includes('uranus_7.mp3')) {
+            selectedAudio = 'uranus';
+        } else if (currentURL.includes('neptune_8.mp3')) {
+            selectedAudio = 'neptune';
+        } else if (currentURL.includes('sun_9.mp3')) {
+            selectedAudio = 'sun';
+        } else {
+            // Check for URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const audioParam = urlParams.get('audio');
+            if (audioParam && audioParam.trim() !== '') {
+                selectedAudio = audioParam.toLowerCase();
+            }
+        }
+
+        console.log('Selected audio:', selectedAudio);
+
         // ==================== AUDIO LIBRARY ====================
         const AUDIO_LIBRARY = {
+            sun: {
+                url: 'Sun_9.mp3',
+                title: 'SUN',
+                subtitle: 'Center of Our Solar System',
+                color: '#ff9800'
+            },
             mercury: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Mercury_2.mp3',
+                url: 'Mercury_2.mp3',
                 title: 'MERCURY',
                 subtitle: 'Closest Planet to the Sun',
                 color: '#9e9e9e'
             },
             venus: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Venus_1.mp3',
+                url: 'Venus_1.mp3',
                 title: 'VENUS',
                 subtitle: 'Earth\'s Twin Sister',
                 color: '#ffcc80'
             },
             earth: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Earth_3.mp3',
+                url: 'Earth_3.mp3',
                 title: 'EARTH',
                 subtitle: 'Our Home Planet',
                 color: '#4fc3f7'
             },
             mars: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Mars_4.mp3',
+                url: 'Mars_4.mp3',
                 title: 'MARS',
                 subtitle: 'The Red Planet',
                 color: '#ff5722'
             },
             jupiter: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Jupiter_5.mp3',
+                url: 'Jupiter_5.mp3',
                 title: 'JUPITER',
                 subtitle: 'The Giant Planet',
                 color: '#ffa726'
             },
             saturn: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Saturn_6.mp3',
+                url: 'Saturn_6.mp3',
                 title: 'SATURN',
                 subtitle: 'The Ringed Planet',
                 color: '#ffca28'
             },
             uranus: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Uranus_7.mp3',
+                url: 'Uranus_7.mp3',
                 title: 'URANUS',
                 subtitle: 'The Ice Giant',
                 color: '#80deea'
             },
             neptune: {
-                url: 'https://ttobitobi023-a11y.github.io/solar/Neptune_8.mp3',
+                url: 'Neptune_8.mp3',
                 title: 'NEPTUNE',
                 subtitle: 'The Blue Giant',
                 color: '#5c6bc0'
@@ -507,15 +538,8 @@
         // Mobile detection
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-        function getAudioFromURL() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const audioKey = urlParams.get('audio') || 'earth';
-            return AUDIO_LIBRARY[audioKey] || AUDIO_LIBRARY.earth;
-        }
-
         function createStars() {
             const stars = document.getElementById('stars');
-            // Fewer stars on mobile for better performance
             const starCount = isMobile ? 60 : 100;
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
@@ -530,7 +554,7 @@
         }
 
         function initializeAudio() {
-            const currentAudio = getAudioFromURL();
+            const currentAudio = AUDIO_LIBRARY[selectedAudio] || AUDIO_LIBRARY.earth;
             
             // Update UI
             planetTitle.textContent = currentAudio.title;
@@ -539,7 +563,7 @@
             loadingText.textContent = `Loading ${currentAudio.title.toLowerCase()} narration...`;
             playingMessage.textContent = `🎵 Now Playing: ${currentAudio.title}`;
 
-            // Set audio source
+            // Set audio source - use relative path
             audioPlayer.src = currentAudio.url;
         }
 
@@ -562,26 +586,21 @@
             
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    // Success - audio is playing
                     loadingSection.classList.add('hidden');
                     playingSection.classList.remove('hidden');
                     audioWave.classList.remove('hidden');
                 }).catch(error => {
-                    // Autoplay failed - try multiple strategies
-                    console.log('Autoplay failed, trying alternative methods:', error);
+                    console.log('Autoplay failed:', error);
                     
-                    // Strategy 1: Wait a bit and try again
                     setTimeout(() => {
                         audioPlayer.play().then(() => {
                             loadingSection.classList.add('hidden');
                             playingSection.classList.remove('hidden');
                             audioWave.classList.remove('hidden');
                         }).catch(e => {
-                            // Strategy 2: Show message to tap
                             statusMessage.textContent = "Tap to Start Audio";
                             loadingText.textContent = "Audio requires interaction";
                             
-                            // Strategy 3: Listen for any user interaction
                             const startOnInteraction = () => {
                                 audioPlayer.play().then(() => {
                                     loadingSection.classList.add('hidden');
@@ -605,10 +624,8 @@
             createStars();
             initializeAudio();
             
-            // Start audio playback with multiple attempts
             setTimeout(startAudioPlayback, 500);
             
-            // Additional attempt after a longer delay
             setTimeout(() => {
                 if (audioPlayer.paused && loadingSection.classList.contains('hidden') === false) {
                     startAudioPlayback();
@@ -652,23 +669,7 @@
             `;
         });
 
-        // Additional mobile optimization: prevent zoom on double-tap
-        document.addEventListener('touchstart', function(e) {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(e) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                e.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-
-        // Auto-retry audio if still not playing after all attempts
+        // Auto-retry audio
         setTimeout(() => {
             if (audioPlayer.paused && loadingSection.classList.contains('hidden') === false) {
                 statusMessage.textContent = "Tap Screen to Start";
