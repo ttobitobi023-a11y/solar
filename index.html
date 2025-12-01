@@ -189,7 +189,7 @@
         }
 
         .status-container {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255,255, 0.05);
             border-radius: 15px;
             padding: 18px;
             margin: 18px 0;
@@ -442,6 +442,12 @@
     <script>
         // ==================== AUDIO LIBRARY ====================
         const AUDIO_LIBRARY = {
+            sun: {
+                url: 'https://ttobitobi023-a11y.github.io/solar/Sun_9.mp3',
+                title: 'THE SUN',
+                subtitle: 'Center of Our Solar System',
+                color: '#ff9800'
+            },
             mercury: {
                 url: 'https://ttobitobi023-a11y.github.io/solar/Mercury_2.mp3',
                 title: 'MERCURY',
@@ -509,7 +515,11 @@
 
         function getAudioFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
-            const audioKey = urlParams.get('audio') || 'earth';
+            const audioKey = urlParams.get('audio') || 'earth'; // Default to earth if no parameter
+            
+            console.log('URL Parameter audio:', audioKey); // Debug log
+            console.log('Available audio keys:', Object.keys(AUDIO_LIBRARY)); // Debug log
+            
             return AUDIO_LIBRARY[audioKey] || AUDIO_LIBRARY.earth;
         }
 
@@ -531,6 +541,9 @@
 
         function initializeAudio() {
             const currentAudio = getAudioFromURL();
+            
+            // Debug log
+            console.log('Selected audio:', currentAudio);
             
             // Update UI
             planetTitle.textContent = currentAudio.title;
@@ -558,17 +571,19 @@
         }
 
         function startAudioPlayback() {
+            console.log('Attempting to play audio...');
             const playPromise = audioPlayer.play();
             
             if (playPromise !== undefined) {
                 playPromise.then(() => {
+                    console.log('Audio playback started successfully');
                     // Success - audio is playing
                     loadingSection.classList.add('hidden');
                     playingSection.classList.remove('hidden');
                     audioWave.classList.remove('hidden');
                 }).catch(error => {
+                    console.log('Autoplay failed:', error);
                     // Autoplay failed - try multiple strategies
-                    console.log('Autoplay failed, trying alternative methods:', error);
                     
                     // Strategy 1: Wait a bit and try again
                     setTimeout(() => {
@@ -602,6 +617,7 @@
 
         // Initialize when page loads
         window.addEventListener('load', function() {
+            console.log('Page loaded, initializing...');
             createStars();
             initializeAudio();
             
@@ -611,6 +627,7 @@
             // Additional attempt after a longer delay
             setTimeout(() => {
                 if (audioPlayer.paused && loadingSection.classList.contains('hidden') === false) {
+                    console.log('Second attempt to start audio...');
                     startAudioPlayback();
                 }
             }, 2000);
@@ -621,6 +638,7 @@
 
         // Audio event listeners
         audioPlayer.addEventListener('playing', function() {
+            console.log('Audio is now playing');
             loadingSection.classList.add('hidden');
             playingSection.classList.remove('hidden');
             audioWave.classList.remove('hidden');
@@ -629,6 +647,7 @@
         });
 
         audioPlayer.addEventListener('ended', function() {
+            console.log('Audio playback ended');
             playingSection.innerHTML = `
                 <div class="status">✅ Tour Complete</div>
                 <div class="audio-status">Thank you for exploring!</div>
@@ -637,18 +656,26 @@
         });
 
         audioPlayer.addEventListener('pause', function() {
+            console.log('Audio paused');
             audioWave.classList.add('hidden');
         });
 
         audioPlayer.addEventListener('play', function() {
+            console.log('Audio play event fired');
             audioWave.classList.remove('hidden');
         });
 
         audioPlayer.addEventListener('error', function(e) {
-            console.error('Audio error:', e);
+            console.error('Audio error event:', e);
+            console.error('Audio error details:', audioPlayer.error);
+            
+            // Get current audio
+            const currentAudio = getAudioFromURL();
+            
             loadingSection.innerHTML = `
-                <div class="status">❌ Audio Error</div>
-                <div style="font-size: 12px; color: #f44336; margin-top: 10px;">Please check your connection</div>
+                <div class="status">❌ ${currentAudio.title} Audio Error</div>
+                <div style="font-size: 12px; color: #f44336; margin-top: 10px;">Unable to load audio file</div>
+                <div style="font-size: 11px; color: #81d4fa; margin-top: 5px;">File: ${currentAudio.url}</div>
             `;
         });
 
@@ -671,6 +698,7 @@
         // Auto-retry audio if still not playing after all attempts
         setTimeout(() => {
             if (audioPlayer.paused && loadingSection.classList.contains('hidden') === false) {
+                console.log('Final attempt - showing tap to start message');
                 statusMessage.textContent = "Tap Screen to Start";
                 loadingText.textContent = "Audio ready - tap anywhere";
                 
