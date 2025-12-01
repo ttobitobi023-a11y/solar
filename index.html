@@ -109,7 +109,7 @@
 
         .planet-container {
             position: relative;
-            height: 180px;
+            height: 200px;
             margin: 25px 0;
             display: flex;
             justify-content: center;
@@ -117,14 +117,48 @@
         }
 
         .sun {
-            width: 50px;
-            height: 50px;
-            background: radial-gradient(circle, #ffeb3b, #ff9800);
+            width: 65px;
+            height: 65px;
+            background: radial-gradient(circle, #ffeb3b, #ff9800, #ff5722);
             border-radius: 50%;
-            box-shadow: 0 0 40px #ff9800;
-            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 60px #ff9800, 0 0 100px rgba(255, 152, 0, 0.3);
+            animation: sunPulse 3s ease-in-out infinite;
             position: absolute;
             z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sun:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 80px #ff9800, 0 0 120px rgba(255, 152, 0, 0.4);
+        }
+
+        .sun.active {
+            box-shadow: 0 0 100px #ff9800, 0 0 150px rgba(255, 152, 0, 0.5);
+            animation: sunPulseActive 1.5s ease-in-out infinite;
+        }
+
+        @keyframes sunPulse {
+            0%, 100% { 
+                box-shadow: 0 0 60px #ff9800, 0 0 100px rgba(255, 152, 0, 0.3);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 80px #ff9800, 0 0 120px rgba(255, 152, 0, 0.4);
+                transform: scale(1.03);
+            }
+        }
+
+        @keyframes sunPulseActive {
+            0%, 100% { 
+                box-shadow: 0 0 80px #ff9800, 0 0 130px rgba(255, 152, 0, 0.5);
+                transform: scale(1.05);
+            }
+            50% { 
+                box-shadow: 0 0 100px #ff9800, 0 0 150px rgba(255, 152, 0, 0.6);
+                transform: scale(1.08);
+            }
         }
 
         .planet {
@@ -134,6 +168,12 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .planet:hover {
+            transform: scale(1.1);
         }
 
         /* Planet sizes optimized for mobile */
@@ -353,8 +393,13 @@
             }
             
             .planet-container {
-                height: 160px;
+                height: 180px;
                 margin: 20px 0;
+            }
+            
+            .sun {
+                width: 55px;
+                height: 55px;
             }
             
             .pause-btn {
@@ -365,7 +410,7 @@
 
         /* Reduce motion for accessibility */
         @media (prefers-reduced-motion: reduce) {
-            .star, .logo, .planet, .wave-bar, .loading-progress {
+            .star, .logo, .planet, .wave-bar, .loading-progress, .sun {
                 animation: none;
             }
         }
@@ -381,15 +426,15 @@
         <p class="subtitle" id="planetSubtitle">Interactive Space Exploration</p>
 
         <div class="planet-container">
-            <div class="sun"></div>
-            <div class="planet mercury"></div>
-            <div class="planet venus"></div>
-            <div class="planet earth"></div>
-            <div class="planet mars"></div>
-            <div class="planet jupiter"></div>
-            <div class="planet saturn"></div>
-            <div class="planet uranus"></div>
-            <div class="planet neptune"></div>
+            <div class="sun" id="sunElement" onclick="playSunAudio()"></div>
+            <div class="planet mercury" onclick="playPlanetAudio('mercury')"></div>
+            <div class="planet venus" onclick="playPlanetAudio('venus')"></div>
+            <div class="planet earth" onclick="playPlanetAudio('earth')"></div>
+            <div class="planet mars" onclick="playPlanetAudio('mars')"></div>
+            <div class="planet jupiter" onclick="playPlanetAudio('jupiter')"></div>
+            <div class="planet saturn" onclick="playPlanetAudio('saturn')"></div>
+            <div class="planet uranus" onclick="playPlanetAudio('uranus')"></div>
+            <div class="planet neptune" onclick="playPlanetAudio('neptune')"></div>
         </div>
 
         <div class="status-container">
@@ -415,7 +460,7 @@
                     <div class="wave-bar"></div>
                     <div class="wave-bar"></div>
                 </div>
-                <div class="audio-status">Audio guide is active</div>
+                <div class="audio-status" id="audioStatus">Audio guide is active</div>
                 
                 <!-- Pause Button -->
                 <div class="audio-controls">
@@ -436,12 +481,19 @@
         <div class="project-info">
             <div>Solar System Project • Space Exploration</div>
             <div style="margin-top: 5px; font-size: 11px;">Scan QR code to hear the guided tour</div>
+            <div style="margin-top: 3px; font-size: 10px; opacity: 0.6;">Tap on planets to learn more</div>
         </div>
     </div>
 
     <script>
         // ==================== AUDIO LIBRARY ====================
         const AUDIO_LIBRARY = {
+            sun: {
+                url: 'https://ttobitobi023-a11y.github.io/solar/Sun_0.mp3',
+                title: 'THE SUN',
+                subtitle: 'Center of Our Solar System',
+                color: '#ff9800'
+            },
             mercury: {
                 url: 'https://ttobitobi023-a11y.github.io/solar/Mercury_2.mp3',
                 title: 'MERCURY',
@@ -503,14 +555,20 @@
         const playingMessage = document.getElementById('playingMessage');
         const audioWave = document.getElementById('audioWave');
         const pauseButton = document.getElementById('pauseButton');
+        const audioStatus = document.getElementById('audioStatus');
+        const sunElement = document.getElementById('sunElement');
+
+        // Current playing audio
+        let currentAudio = 'earth';
+        let isPlaying = false;
 
         // Mobile detection
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         function getAudioFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
-            const audioKey = urlParams.get('audio') || 'earth';
-            return AUDIO_LIBRARY[audioKey] || AUDIO_LIBRARY.earth;
+            const audioKey = urlParams.get('audio') || 'sun'; // Default to sun now
+            return AUDIO_LIBRARY[audioKey] || AUDIO_LIBRARY.sun;
         }
 
         function createStars() {
@@ -529,18 +587,72 @@
             }
         }
 
-        function initializeAudio() {
-            const currentAudio = getAudioFromURL();
+        function updateUI(audioData) {
+            planetTitle.textContent = audioData.title;
+            planetSubtitle.textContent = audioData.subtitle;
+            planetTitle.style.color = audioData.color;
+            playingMessage.textContent = `🎵 Now Playing: ${audioData.title}`;
             
-            // Update UI
-            planetTitle.textContent = currentAudio.title;
-            planetSubtitle.textContent = currentAudio.subtitle;
-            planetTitle.style.color = currentAudio.color;
-            loadingText.textContent = `Loading ${currentAudio.title.toLowerCase()} narration...`;
-            playingMessage.textContent = `🎵 Now Playing: ${currentAudio.title}`;
+            // Highlight the active celestial body
+            updateActiveHighlight(audioData);
+        }
 
-            // Set audio source
-            audioPlayer.src = currentAudio.url;
+        function updateActiveHighlight(audioData) {
+            // Reset all highlights
+            sunElement.classList.remove('active');
+            document.querySelectorAll('.planet').forEach(planet => {
+                planet.classList.remove('active');
+            });
+            
+            // Highlight the active one
+            if (audioData.title === 'THE SUN') {
+                sunElement.classList.add('active');
+            } else {
+                const planetElement = document.querySelector(`.${audioData.title.toLowerCase()}`);
+                if (planetElement) {
+                    planetElement.classList.add('active');
+                }
+            }
+        }
+
+        function playAudio(audioKey) {
+            const audioData = AUDIO_LIBRARY[audioKey];
+            if (!audioData) return;
+            
+            currentAudio = audioKey;
+            updateUI(audioData);
+            
+            // Update loading text
+            loadingText.textContent = `Loading ${audioData.title.toLowerCase()} narration...`;
+            
+            // Set and play audio
+            audioPlayer.src = audioData.url;
+            
+            const playPromise = audioPlayer.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    loadingSection.classList.add('hidden');
+                    playingSection.classList.remove('hidden');
+                    audioWave.classList.remove('hidden');
+                    isPlaying = true;
+                    pauseButton.classList.remove('paused');
+                    pauseButton.querySelector('span:last-child').textContent = 'PAUSE';
+                }).catch(error => {
+                    console.log('Audio play failed:', error);
+                    // Show fallback message
+                    statusMessage.textContent = "Tap to Play Audio";
+                    loadingText.textContent = "Click to start narration";
+                });
+            }
+        }
+
+        function playSunAudio() {
+            playAudio('sun');
+        }
+
+        function playPlanetAudio(planetName) {
+            playAudio(planetName);
         }
 
         function togglePause() {
@@ -549,25 +661,29 @@
                 pauseButton.classList.remove('paused');
                 pauseButton.querySelector('span:last-child').textContent = 'PAUSE';
                 audioWave.classList.remove('hidden');
+                isPlaying = true;
             } else {
                 audioPlayer.pause();
                 pauseButton.classList.add('paused');
                 pauseButton.querySelector('span:last-child').textContent = 'PLAY';
                 audioWave.classList.add('hidden');
+                isPlaying = false;
             }
         }
 
         function startAudioPlayback() {
+            const initialAudio = getAudioFromURL();
+            updateUI(initialAudio);
+            
             const playPromise = audioPlayer.play();
             
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    // Success - audio is playing
                     loadingSection.classList.add('hidden');
                     playingSection.classList.remove('hidden');
                     audioWave.classList.remove('hidden');
+                    isPlaying = true;
                 }).catch(error => {
-                    // Autoplay failed - try multiple strategies
                     console.log('Autoplay failed, trying alternative methods:', error);
                     
                     // Strategy 1: Wait a bit and try again
@@ -576,6 +692,7 @@
                             loadingSection.classList.add('hidden');
                             playingSection.classList.remove('hidden');
                             audioWave.classList.remove('hidden');
+                            isPlaying = true;
                         }).catch(e => {
                             // Strategy 2: Show message to tap
                             statusMessage.textContent = "Tap to Start Audio";
@@ -587,6 +704,7 @@
                                     loadingSection.classList.add('hidden');
                                     playingSection.classList.remove('hidden');
                                     audioWave.classList.remove('hidden');
+                                    isPlaying = true;
                                     document.removeEventListener('click', startOnInteraction);
                                     document.removeEventListener('touchstart', startOnInteraction);
                                 });
@@ -603,7 +721,11 @@
         // Initialize when page loads
         window.addEventListener('load', function() {
             createStars();
-            initializeAudio();
+            
+            // Set initial audio from URL or default to sun
+            const initialAudioData = getAudioFromURL();
+            updateUI(initialAudioData);
+            audioPlayer.src = initialAudioData.url;
             
             // Start audio playback with multiple attempts
             setTimeout(startAudioPlayback, 500);
@@ -626,22 +748,33 @@
             audioWave.classList.remove('hidden');
             pauseButton.classList.remove('paused');
             pauseButton.querySelector('span:last-child').textContent = 'PAUSE';
+            isPlaying = true;
+            audioStatus.textContent = `${AUDIO_LIBRARY[currentAudio].title} narration playing`;
         });
 
         audioPlayer.addEventListener('ended', function() {
             playingSection.innerHTML = `
                 <div class="status">✅ Tour Complete</div>
                 <div class="audio-status">Thank you for exploring!</div>
+                <div class="audio-controls">
+                    <button onclick="playAudio('sun')" class="pause-btn" style="margin-top: 10px;">
+                        <span>🔁</span>
+                        <span>REPLAY</span>
+                    </button>
+                </div>
             `;
             audioWave.classList.add('hidden');
+            isPlaying = false;
         });
 
         audioPlayer.addEventListener('pause', function() {
             audioWave.classList.add('hidden');
+            isPlaying = false;
         });
 
         audioPlayer.addEventListener('play', function() {
             audioWave.classList.remove('hidden');
+            isPlaying = true;
         });
 
         audioPlayer.addEventListener('error', function(e) {
@@ -649,6 +782,12 @@
             loadingSection.innerHTML = `
                 <div class="status">❌ Audio Error</div>
                 <div style="font-size: 12px; color: #f44336; margin-top: 10px;">Please check your connection</div>
+                <div class="audio-controls">
+                    <button onclick="playAudio('sun')" class="pause-btn" style="margin-top: 10px;">
+                        <span>🔁</span>
+                        <span>TRY AGAIN</span>
+                    </button>
+                </div>
             `;
         });
 
@@ -688,6 +827,11 @@
                 document.addEventListener('touchstart', finalAttempt, { once: true });
             }
         }, 4000);
+
+        // Make functions globally available for onclick events
+        window.playSunAudio = playSunAudio;
+        window.playPlanetAudio = playPlanetAudio;
+        window.playAudio = playAudio;
     </script>
 </body>
 </html>
